@@ -702,6 +702,72 @@ describe('originWhitelist', function() {
   });
 });
 
+describe('proxyBasePath', function() {
+  before(function() {
+    cors_anywhere = createServer({
+      proxyBasePath: 'secret',
+    });
+    cors_anywhere_port = cors_anywhere.listen(0).address().port;
+  });
+  after(stopServer);
+
+  it('GET /secret/example.com with proxyBasePath "secret"', function(done) {
+    request(cors_anywhere)
+      .get('/secret/example.com')
+      .expect('Access-Control-Allow-Origin', '*')
+      .expect('x-request-url', 'http://example.com/')
+      .expect(200, 'Response from example.com', done);
+  });
+
+  it('GET /example.com with proxyBasePath "secret"', function(done) {
+    request(cors_anywhere)
+      .get('/example.com/')
+      .expect('Access-Control-Allow-Origin', '*')
+      .expect(404, '', done);
+  });
+
+  it('GET /secret/example.com/redirectloop with proxyBasePath "secret"', function(done) {
+    request(cors_anywhere)
+      .get('/secret/example.com/redirectloop')
+      .redirects(0)
+      .expect('Access-Control-Allow-Origin', '*')
+      .expect('Location', /^http:\/\/127.0.0.1:\d+\/secret\/http:\/\/example.com\/redirectloop$/)
+      .expect(302, 'redirecting ad infinitum...', done);
+  });
+
+  it('GET /secret/http://robots.txt with proxyBasePath "secret" should be proxied', function(done) {
+    request(cors_anywhere)
+      .get('/secret/http://robots.txt')
+      .expect('Access-Control-Allow-Origin', '*')
+      .expect(200, 'this is http://robots.txt', done);
+  });
+
+  it('GET /secret/http:/notenoughslashes with proxyBasePath "secret"', function(done) {
+    request(cors_anywhere)
+      .get('/secret/http:/notenoughslashes')
+      .expect('Access-Control-Allow-Origin', '*')
+      .expect(400, 'The URL is invalid: two slashes are needed after the http(s):.', done);
+  });
+});
+
+describe('proxyBasePath (fallback)', function() {
+  before(function() {
+    cors_anywhere = createServer({
+      proxyBasePath: '',
+    });
+    cors_anywhere_port = cors_anywhere.listen(0).address().port;
+  });
+  after(stopServer);
+
+  it('GET /example.com with empty proxyBasePath', function(done) {
+    request(cors_anywhere)
+      .get('/example.com/')
+      .expect('Access-Control-Allow-Origin', '*')
+      .expect('x-request-url', 'http://example.com/')
+      .expect(200, 'Response from example.com', done);
+  });
+});
+
 describe('handleInitialRequest', function() {
   afterEach(stopServer);
 

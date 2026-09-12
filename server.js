@@ -9,6 +9,7 @@ var port = process.env.PORT || 8080;
 // use originWhitelist instead.
 var originBlacklist = parseEnvList(process.env.CORSANYWHERE_BLACKLIST);
 var originWhitelist = parseEnvList(process.env.CORSANYWHERE_WHITELIST);
+var corsAnywhereSecret = (process.env.CORSANYWHERE_SECRET || '').replace(/^\/+|\/+$/g, '');
 function parseEnvList(env) {
   if (!env) {
     return [];
@@ -25,6 +26,7 @@ cors_proxy.createServer({
   originWhitelist: originWhitelist,
   requireHeader: ['origin', 'x-requested-with'],
   checkRateLimit: checkRateLimit,
+  proxyBasePath: corsAnywhereSecret,
   removeHeaders: [
     'cookie',
     'cookie2',

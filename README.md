@@ -152,6 +152,11 @@ export CORSANYWHERE_WHITELIST=https://example.com,http://example.com,http://exam
 node server.js
 ```
 
+To require a secret path segment before the proxied URL, set `CORSANYWHERE_SECRET`.
+For example, with `CORSANYWHERE_SECRET=my-secret`, requests must use
+`http://localhost:8080/my-secret/<target-url>` instead of `http://localhost:8080/<target-url>`.
+If `CORSANYWHERE_SECRET` is unset or empty, the default `/<target-url>` path is used.
+
 This application can immediately be run on Heroku, see https://devcenter.heroku.com/articles/nodejs
 for instructions. Note that their [Acceptable Use Policy](https://www.heroku.com/policy/aup) forbids
 the use of Heroku for operating an open proxy, so make sure that you either enforce a whitelist as
